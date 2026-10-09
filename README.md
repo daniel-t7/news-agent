@@ -1,0 +1,43 @@
+# news-agent
+
+A small AI agent that follows news on a topic you choose: it reads RSS feeds, opens the relevant articles and writes a short digest. It runs locally with [Ollama](https://ollama.com), and was built as a learning project to practice tool calling without any agent framework.
+
+The digest is written in Bulgarian, so the project is designed and tuned to work in Bulgarian.
+
+## How it works
+
+The agent runs a loop: the model decides which tool to call (`fetch_feed`, `read_article`), the code executes it and returns the result, and this repeats until the model produces the final digest.
+
+## Requirements
+
+- Python 3.13
+- [uv](https://docs.astral.sh/uv/)
+- Ollama running locally with a tool-calling model (default: `qwen3:8b`)
+
+## Setup
+
+```bash
+uv sync
+ollama pull qwen3:8b
+```
+
+## Run
+
+```bash
+uv run python -m news_agent.agent
+```
+
+Topic and sources are currently constants in `src/news_agent/agent.py`.
+
+## Structure
+
+```
+src/news_agent/
+├── llm.py          # the only place that talks to Ollama
+├── agent.py        # the agent loop and system prompt
+├── db.py           # SQLite memory (planned)
+└── tools/
+    ├── __init__.py # tool registry and runner
+    ├── feeds.py    # fetch_feed: latest articles from an RSS feed
+    └── reader.py   # read_article: clean text of an article
+```
