@@ -80,5 +80,14 @@ def run_agent(topic: str) -> str:
     return "Достигнат лимит на стъпките без финален отговор."
 
 #Test
+# if __name__ == "__main__":
+#     print(run_agent("изкуствен интелект и големи езикови модели"))
+
+# input topic
 if __name__ == "__main__":
-    print(run_agent("изкуствен интелект и големи езикови модели"))
+    topic = input("Каква тема да следя? ").strip()
+
+    if not topic:
+        topic = "изкуствен интелект и големи езикови модели"
+
+    print(run_agent(topic))
