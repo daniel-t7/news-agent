@@ -1,5 +1,6 @@
 import json
 
+from news_agent import db
 from news_agent.llm import ask
 from news_agent.tools import SCHEMAS, run_tool
 
@@ -29,30 +30,46 @@ def run_agent(topic: str) -> str:
         {"role":"user", "content" : f"Тема: {topic}\nИзточници: " + ", ".join(SOURCES)},
     ]
 
-    articles_read = 0
+    read_urls: list[str] = []
+
+    new_found = 0
+    nagged = False
 
     for step in range(MAX_STEPS):
         msg = ask(messages, tools=SCHEMAS)
         messages.append(msg)
 
         if not msg.tool_calls:
-            if articles_read == 0 and step < MAX_STEPS - 1:
-                            messages.append({
-                                "role": "user",
-                                "content": "Не си прочел нито една статия. Извикай read_article "
-                                           "за избраните статии, преди да напишеш дайджеста.",
-                            })
-                            continue
-            return msg.content or ""
+            if new_found > 0 and not read_urls and not nagged:
+                nagged = True
+                messages.append({
+                    "role": "user",
+                    "content": "Не си прочел нито една статия. Извикай read_article "
+                               "за избраните статии, преди да напишеш дайджеста.",
+                })
+                continue
+
+            digest = msg.content or ""
+            if read_urls:
+                db.save_digest(topic, digest)
+                for url in read_urls:
+                    db.mark_seen(url)
+
+            return digest
 
         for call in msg.tool_calls:
             name = call.function.name
-            args = call.function.arguments
+            args = dict(call.function.arguments)
             print(f"[стъпка {step + 1}] {name}({args})")
 
-            result = run_tool(name, dict(args))
-            if name == "read_article" and "text" in result:
-                            articles_read += 1
+            result = run_tool(name, args)
+
+            if name == "feed_fetch" and isinstance(result, list):
+                result = [a for a in result if not db.is_seen(a["link"])]
+                new_found += len(result)
+
+            if name == "read_article" and isinstance(result, dict) and "text" in result:
+                read_urls.append(result["url"])
 
             messages.append({
                 "role":"tool",

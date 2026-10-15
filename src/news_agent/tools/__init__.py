@@ -16,5 +16,5 @@ def run_tool(name: str, arguments: dict) -> dict | list:
         return TOOLS[name](**arguments)
     except TypeError as e:
         return {"error": f"Грешни аргументи за {name}: {e}"}
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 — грешките се връщат към модела
         return {"error": f"Грешка в {name}: {e}"}
