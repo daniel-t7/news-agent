@@ -1,9 +1,10 @@
 # news-agent
 
-A small AI agent that follows news on a topic you choose: it reads RSS feeds, opens the relevant articles and writes a short digest. It runs locally with [Ollama](https://ollama.com), and was built as a learning project to practice tool calling without any agent framework.
+A small AI agent that follows news on a topic you choose: it reads RSS feeds, opens the relevant articles and writes a short digest. It runs locally with [Ollama](https://ollama.com).
+
+> **Educational project.** Built for learning purposes: to practice building an AI agent from scratch (tool calling, an agent loop, persistent memory).
 
 The digest is written in Bulgarian, so the project is designed and tuned to work in Bulgarian.
-
 ## How it works
 
 The agent runs a loop: the model decides which tool to call (`fetch_feed`, `read_article`), the code executes it and returns the result, and this repeats until the model produces the final digest.
